@@ -12,6 +12,7 @@ import scipy.stats as stats
 from scipy.sparse.linalg import svds
 from sklearn import linear_model, metrics
 from sklearn.decomposition import SparsePCA
+from sklearn.ensemble import RandomForestRegressor
 from scipy.stats import pearsonr
 from scipy.spatial.distance import cdist
 from joblib import Parallel, delayed
@@ -627,7 +628,7 @@ class feature_predictor():
         self.params = params
         
         if model == 'RandomForest' or model == 'RF' or model == 'randomforest':
-            self.lr = ensemble.RandomForestRegressor(**params) #n_estimators=100, *, criterion='squared_error', max_depth=None, min_samples_split=2, min_samples_leaf=1, min_weight_fraction_leaf=0.0, max_features=1.0, max_leaf_nodes=None, min_impurity_decrease=0.0, bootstrap=True, oob_score=False, n_jobs=None, random_state=None, verbose=0, warm_start=False, ccp_alpha=0.0, max_samples=None)
+            self.lr = RandomForestRegressor(**params) #n_estimators=100, *, criterion='squared_error', max_depth=None, min_samples_split=2, min_samples_leaf=1, min_weight_fraction_leaf=0.0, max_features=1.0, max_leaf_nodes=None, min_impurity_decrease=0.0, bootstrap=True, oob_score=False, n_jobs=None, random_state=None, verbose=0, warm_start=False, ccp_alpha=0.0, max_samples=None)
         
         if model == 'LinearRegression' or model == 'OLS' or model == 'LR':
             self.lr = linear_model.LinearRegression(**params) #, fit_intercept=True, copy_X=True, n_jobs=None, positive=False)
