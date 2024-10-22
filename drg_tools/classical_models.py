@@ -22,7 +22,7 @@ class logistic_regression:
     def __init__(
             self,
             n_jobs: int | None = None,
-            penalty: str = 'l2',
+            penalty: str | None = 'l2',
             dual: bool = False,
             tol: float = 0.0001,
             C: float = 1.0,
@@ -195,9 +195,8 @@ class sk_regression:
             self.tol = 0.001 if tol is None else tol
             
             # NOTE: The code as-is will set logistic_regression.penalty to None if self.penalty is None.
-            # If this behavior is not intended, it can be fixed by making self.penalty a required input or setting a default value.
-            # If this behavior is allowed, the typehint for `logistic_regression.penalty` should allow None (i.e. `str | None`).
-            # TODO: Add null and/or error handling for self.penalty input.
+            # If this behavior is not intended, it can be fixed by making self.penalty a required input or setting a default value,
+            # and the logistic_regression.penalty typehint should be made non-optional (i.e. remove the `| None`).
             self.logit = logistic_regression(
                 penalty = self.penalty,
                 C=self.alpha,
