@@ -714,6 +714,7 @@ class feature_predictor:
         elif self.model in ('RandomForest', 'RF', 'randomforest'):
             ftimp = self.lr.feature_importances_
             return np.argsort(np.argsort(-ftimp)) + 1
+        return None
     
     def coef_(self):
         if self.model in ('RandomForest', 'RF', 'randomforest'):
