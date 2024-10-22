@@ -19,15 +19,42 @@ from .torch_regression import torch_Regression
 class logistic_regression:
     """Logistic regression wrapper that uses joblib to fit multiple outclasses independently."""
 
-    def __init__(self, n_jobs = None, penalty='l2', dual=False, tol=0.0001, C=1.0, fit_intercept=True, intercept_scaling=1, class_weight=None, random_state=None, solver='lbfgs', max_iter=100, multi_class='auto', verbose=0, warm_start=False, l1_ratio=None):
-        
-        if n_jobs is None:
-            self.n_jobs = os.cpu_count()
-        else:
-            self.n_jobs = n_jobs
-        
-        self.model = linear_model.LogisticRegression(n_jobs = 1, penalty=penalty, dual=dual, tol=tol, C=1./C, fit_intercept=fit_intercept, intercept_scaling=intercept_scaling, class_weight=class_weight, random_state=random_state, solver=solver, max_iter=max_iter, multi_class=multi_class, verbose=verbose, warm_start=warm_start, l1_ratio=l1_ratio)
-        
+    def __init__(
+            self,
+            n_jobs: int | None = None,
+            penalty: str = 'l2',
+            dual: bool = False,
+            tol: float = 0.0001,
+            C: float = 1.0,
+            fit_intercept: bool = True,
+            intercept_scaling: int | float = 1,
+            class_weight = None,
+            random_state = None,
+            solver: str = 'lbfgs',
+            max_iter: int = 100,
+            multi_class: str = 'auto',
+            verbose: int = 0,
+            warm_start: bool = False,
+            l1_ratio: float | None = None
+        ):
+        self.n_jobs = os.cpu_count() if n_jobs is None else n_jobs        
+        self.model = linear_model.LogisticRegression(
+            n_jobs = 1, 
+            penalty=penalty, 
+            dual=dual, 
+            tol=tol, 
+            C=1./C, 
+            fit_intercept=fit_intercept, 
+            intercept_scaling=intercept_scaling, 
+            class_weight=class_weight, 
+            random_state=random_state, 
+            solver=solver, 
+            max_iter=max_iter, 
+            multi_class=multi_class, 
+            verbose=verbose, 
+            warm_start=warm_start, 
+            l1_ratio=l1_ratio
+        )
         self.fit_intercept = fit_intercept
         self.coef_ = None
         self.intercept_ = None
@@ -87,8 +114,30 @@ class logistic_regression:
 class sk_regression:
     """Multi-regression framework that performs automatic dependent, or independent search for hyperparameter for each output track."""
 
-    def __init__(self, alpha=1.0, fit_intercept=True, max_iter=None, tol=None, solver='auto', positive=False, random_state=None, penalty = None, pca = None, center = False, optimize_alpha = True, change_alpha =.6, validation_axis = 1, alpha_search = 'dependent', normalize = False, full_nonlinear = False, logistic = False, warm_start = False, verbose = True, n_jobs = None, refit_l1 = False, **kwargs):
-        
+    def __init__(
+            self,
+            alpha: float = 1.0,
+            fit_intercept: bool = True,
+            max_iter: int | None = None,
+            tol: float | None = None,
+            solver: str = 'auto',
+            positive: bool = False,
+            random_state = None,
+            penalty: str | None = None,
+            pca: int | float | None  = None,
+            center: bool = False,
+            optimize_alpha: bool = True,
+            change_alpha: float = .6,
+            validation_axis: int = 1,
+            alpha_search: str = 'dependent',
+            normalize: bool = False,
+            full_nonlinear: bool = False,
+            logistic: bool = False,
+            warm_start: bool = False,
+            verbose: bool = True,
+            n_jobs: int | None = None,
+            refit_l1: bool = False,
+        ):
         self.refit_l1 = refit_l1 # l1 regression selects features but then regression is fit to selected subset to rescale coefficients
         
         self.verbose = verbose
@@ -107,10 +156,7 @@ class sk_regression:
         self.random_state=random_state # seed for np.random
         self.warm_start = warm_start # after restart, can be used keep parameters learned in last round
         
-        if n_jobs is None:
-            self.n_jobs = os.cpu_count()
-        else:
-            self.n_jobs = n_jobs
+        self.n_jobs = os.cpu_count() if n_jobs is None else n_jobs
         
         self.pca = pca # if not None the input dimensions are reduced to explained variance or number of principal components
         
@@ -136,19 +182,21 @@ class sk_regression:
         self.z_scores = None
         self.p_values = None
         self.select_mask = None
+
+        self.logit: logistic_regression | torch_Regression | None = None
         
         if self.solver in ['SGD', 'Adam']:
             self.logit = torch_Regression()
         else:
             if logistic:
                 # Use logistic regression
-                if solver == 'auto' or solver is None:
-                    self.solver = 'saga'
-                if max_iter is None:
-                    self.max_iter = 300
-                if tol is None:
-                    self.tol = 0.001
+                self.solver = 'saga' if solver in ('auto', None) else solver 
+                self.max_iter = 300 if max_iter is None else max_iter
+                self.tol = 0.001 if tol is None else tol
                 
+                # NOTE: if self.penalty is None, this will set logistic_regression.penalty to None 
+                # TODO: add error handling if this is not the intended functionality, otherwise update 
+                #       the logistic_regression.penalty typehint to allow None (i.e. `penalty: str | None = 'l2',`)
                 self.logit = logistic_regression(penalty = self.penalty, C=self.alpha, solver = self.solver, fit_intercept=self.fit_intercept, warm_start = self.warm_start, n_jobs = self.n_jobs, max_iter = self.max_iter, tol = self.tol)
             else:
                 if penalty is None:
