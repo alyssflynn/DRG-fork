@@ -6,19 +6,13 @@ Models are designed to handle mutli-task data.
 
 '''
 
-import sys, os 
+import os 
 import numpy as np
 import scipy.stats as stats
+from joblib import Parallel, delayed
 from scipy.sparse.linalg import svds
 from sklearn import linear_model, metrics
-from sklearn.decomposition import SparsePCA
 from sklearn.ensemble import RandomForestRegressor
-from scipy.stats import pearsonr
-from scipy.spatial.distance import cdist
-from joblib import Parallel, delayed
-from functools import reduce
-
-from .stats_functions import mse, correlation
 from .torch_regression import torch_Regression
 
 
