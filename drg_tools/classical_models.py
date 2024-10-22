@@ -355,7 +355,7 @@ class sk_regression:
                         if coefnum[nf] == 0 and goesup:
                             updown[nf] = -1
                             js[nf] = 0
-                        elif goesup == False and coefnum[nf] == 0:
+                        elif goesup is False and coefnum[nf] == 0:
                             updown[nf] = 0
                         elif nperf < perform[nf]:
                             updown[nf] = currstage
@@ -381,8 +381,7 @@ class sk_regression:
                         if hasnotimproved[nf] == 10 or hasincreased[nf] == 3:
                             updown[nf] = 0
                             #print( nf, alpha, perform[nf])
-                        
-                
+
                 if alpha <= min_alpha:
                     if (updown == 1).any() and goesup:
                         self.coef_ [updownmask] = coef_
