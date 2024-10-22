@@ -187,45 +187,86 @@ class sk_regression:
         
         if self.solver in ['SGD', 'Adam']:
             self.logit = torch_Regression()
+
+        elif logistic:
+            # Use logistic regression
+            self.solver = 'saga' if solver in ('auto', None) else solver 
+            self.max_iter = 300 if max_iter is None else max_iter
+            self.tol = 0.001 if tol is None else tol
+            
+            # NOTE: The code as-is will set logistic_regression.penalty to None if self.penalty is None.
+            # If this behavior is not intended, it can be fixed by making self.penalty a required input or setting a default value.
+            # If this behavior is allowed, the typehint for `logistic_regression.penalty` should allow None (i.e. `str | None`).
+            # TODO: Add null and/or error handling for self.penalty input.
+            self.logit = logistic_regression(
+                penalty = self.penalty,
+                C=self.alpha,
+                solver = self.solver,
+                fit_intercept=self.fit_intercept,
+                warm_start = self.warm_start,
+                n_jobs = self.n_jobs,
+                max_iter = self.max_iter,
+                tol = self.tol
+            )
+
+        elif penalty is None:
+            self.penalty = 'none'
+
+            self.logit = linear_model.LinearRegression(
+                fit_intercept=self.fit_intercept,
+                n_jobs = self.n_jobs,
+                positive = self.positive
+            )
+        
+        elif penalty == 'l2':
+            self.tol = 0.001 if tol is None else tol
+                
+            self.logit = linear_model.Ridge(
+                alpha=alpha,
+                fit_intercept=self.fit_intercept,
+                max_iter=self.max_iter,
+                tol=self.tol,
+                solver=self.solver,
+                positive=self.positive,
+                random_state = self.random_state
+            )
+
+        elif penalty == 'l1':
+            self.max_iter = 2000 if max_iter is None else max_iter
+            self.tol = 0.0001 if tol is None else tol
+
+            self.logit = linear_model.Lasso(
+                alpha=self.alpha,
+                fit_intercept=self.fit_intercept,
+                max_iter=self.max_iter,
+                tol=self.tol,
+                positive=self.positive,
+                random_state=self.random_state,
+                warm_start = self.warm_start
+            )
+
+        elif penalty == 'elastic':
+            self.max_iter = 1000 if max_iter is None else max_iter
+            self.tol = 0.0001 if tol is None else tol
+            
+            self.logit = linear_model.ElasticNet(
+                alpha=alpha,
+                fit_intercept=self.fit_intercept,
+                max_iter=self.max_iter,
+                tol=self.tol,
+                positive=self.positive,
+                random_state = self.random_state,
+                selection = 'random'
+            )
+
         else:
-            if logistic:
-                # Use logistic regression
-                self.solver = 'saga' if solver in ('auto', None) else solver 
-                self.max_iter = 300 if max_iter is None else max_iter
-                self.tol = 0.001 if tol is None else tol
-                
-                # NOTE: if self.penalty is None, this will set logistic_regression.penalty to None 
-                # TODO: add error handling if this is not the intended functionality, otherwise update 
-                #       the logistic_regression.penalty typehint to allow None (i.e. `penalty: str | None = 'l2',`)
-                self.logit = logistic_regression(penalty = self.penalty, C=self.alpha, solver = self.solver, fit_intercept=self.fit_intercept, warm_start = self.warm_start, n_jobs = self.n_jobs, max_iter = self.max_iter, tol = self.tol)
-            else:
-                if penalty is None:
-                    self.penalty = 'none'
-                    self.logit = linear_model.LinearRegression(fit_intercept=self.fit_intercept, n_jobs = self.n_jobs, positive = self.positive)
-                
-                elif penalty == 'l2':
-                    if tol is None:
-                        self.tol = 0.001
-                        
-                    self.logit = linear_model.Ridge(alpha=alpha, fit_intercept=self.fit_intercept, max_iter=self.max_iter, tol=self.tol, solver=self.solver, positive=self.positive, random_state = self.random_state)
-                
-                elif penalty == 'l1':
-                    if max_iter is None:
-                        self.max_iter = 2000
-                    if tol is None:
-                        self.tol = 0.0001
-                    self.logit = linear_model.Lasso(alpha=self.alpha, fit_intercept=self.fit_intercept, max_iter=self.max_iter, tol=self.tol, positive=self.positive, random_state=self.random_state, warm_start = self.warm_start)
-                
-                elif penalty == 'elastic':
-                    if max_iter is None:
-                        self.max_iter = 1000
-                    if tol is None:
-                        self.tol = 0.0001
-                    self.logit = linear_model.ElasticNet(alpha=alpha, fit_intercept=self.fit_intercept, max_iter=self.max_iter, tol=self.tol, positive=self.positive, random_state = self.random_state, selection = 'random')
-                
-                else:
-                    self.penalty = 'none'
-                    self.logit = linear_model.LinearRegression(fit_intercept=self.fit_intercept, n_jobs = self.n_jobs, positive = self.positive)
+            self.penalty = 'none'
+
+            self.logit = linear_model.LinearRegression(
+                fit_intercept=self.fit_intercept,
+                n_jobs = self.n_jobs,
+                positive = self.positive
+            )
         
     def transform(self, X):
         # Could explore and SVD algo where the ratio of the next singular value to the rest determines if another one will be added.
