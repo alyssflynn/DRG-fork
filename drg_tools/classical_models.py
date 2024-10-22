@@ -632,7 +632,7 @@ class feature_predictor:
         return pred
     
     def feature_importance(self):
-        # assigns t-test statistic to LR coefficients, same as statsmodels.api.OLS
+        """Assigns t-test statistic to LR coefficients, same as statsmodels.api.OLS."""
         if self.model == 'LinearRegression' or self.model == 'OLS' or self.model == 'LR' or self.model == 'ElasticNet' or self.model == 'elastic' or self.model == 'EN' or self.model == 'elasticnet':
             if self.lr.fit_intercept:
                 params = np.append(self.lr.intercept_, self.lr.coef_)
