@@ -16,8 +16,9 @@ from sklearn.ensemble import RandomForestRegressor
 from .torch_regression import torch_Regression
 
 
-# Logistic regression wrapper that uses joblib to fit multiple outclasses independently
-class logistic_regression():
+class logistic_regression:
+    """Logistic regression wrapper that uses joblib to fit multiple outclasses independently."""
+
     def __init__(self, n_jobs = None, penalty='l2', dual=False, tol=0.0001, C=1.0, fit_intercept=True, intercept_scaling=1, class_weight=None, random_state=None, solver='lbfgs', max_iter=100, multi_class='auto', verbose=0, warm_start=False, l1_ratio=None):
         
         if n_jobs is None:
@@ -81,12 +82,11 @@ class logistic_regression():
         if self.fit_intercept:
             pred += self.intercept_
         return pred
-    
 
-
-# multi-regression framework that performs automatic dependent, or independent search for hyperparameter for each output track
    
-class sk_regression():
+class sk_regression:
+    """Multi-regression framework that performs automatic dependent, or independent search for hyperparameter for each output track."""
+
     def __init__(self, alpha=1.0, fit_intercept=True, max_iter=None, tol=None, solver='auto', positive=False, random_state=None, penalty = None, pca = None, center = False, optimize_alpha = True, change_alpha =.6, validation_axis = 1, alpha_search = 'dependent', normalize = False, full_nonlinear = False, logistic = False, warm_start = False, verbose = True, n_jobs = None, refit_l1 = False, **kwargs):
         
         self.refit_l1 = refit_l1 # l1 regression selects features but then regression is fit to selected subset to rescale coefficients
@@ -205,8 +205,6 @@ class sk_regression():
             X = X/self.Xs
             X = np.nan_to_num(X)
 
-        
-        
         if self.pca is not None and self.Vinv is None:
             if self.pca < 1:
                 self.pca = int(np.amin(np.shape(X))*self.pca)
@@ -222,8 +220,6 @@ class sk_regression():
             X = np.dot(X,self.Vinv)
             
         return X
-    
-    
     
     def optimize_hyperparameter(self, X, Y, Xval, Yval, inc, axis = 1, weights = None, method = 'independent', min_alpha = 1e-11, max_alpha = 1e3):
         max_alpha, min_alpha = self.alpha*max_alpha, self.alpha*min_alpha
@@ -478,18 +474,15 @@ class sk_regression():
                 self.coef_[c][:len(X[0])][coef[:len(X[0])]!=0] = self.logit.coef_
                 if self.fit_intercept:
                     self.coef_[c][-1] = self.logit.intercept_
-            
-        
+
     def combine_nonlinear(self, X):
         lenset = len(self.non_linearlist)
         nonlX = np.zeros((len(X), lenset))
         for c, comb in enumerate(self.non_linearlist):
             nonlX[:, c] = X[:,comb[0]]*X[:,comb[1]]
         return np.append(X[:, np.unique(np.concatenate(self.non_linearlist))], nonlX, axis = 1)
-        
-        
+
     def predict(self, X):
-        
         if self.full_nonlinear:
             X = self.combine_nonlinear(X)
         
@@ -520,8 +513,7 @@ class sk_regression():
         return np.around(corout,4)        
     
     def assess_impact(self, featurelist, X, Y, accuracy_func = 'mse'):
-        # repeat fit without feature and measure difference to performance from entire model
-        
+        """Repeat fit without feature and measure difference to performance from entire model."""
         if featurelist == 'ALL':
             featurelist = np.arange(self.shapeX[-1], dtype = int)
         yref = self.predict(X)
@@ -571,11 +563,13 @@ class sk_regression():
             self.select_mask = np.where(np.ones(len(self.coef_[0])-int(self.fit_intercept)) == 1)[0]
         return self.select_mask
     
-    # computes the significance of a parameter being different from zero using bayesian posterior for parameters
-    #https://stackoverflow.com/questions/27928275/find-p-value-significance-in-scikit-learn-linearregression
-    # https://gist.github.com/brentp/5355925
     def statistical_weight(self, X, Y, compute_new = True, comp_pvalues = True, logp = True, rcond = 1e-5, max_feat = 2000):
-                
+        """
+        Computes the significance of a parameter being different from zero using bayesian posterior for parameters.
+        
+        - https://stackoverflow.com/questions/27928275/find-p-value-significance-in-scikit-learn-linearregression
+        - https://gist.github.com/brentp/5355925
+        """   
         if self.z_scores is None or compute_new:
             X = self.transform(X)
             yref = self.predict(X)
@@ -609,14 +603,13 @@ class sk_regression():
                 self.p_values = -np.log10(self.p_values)
                 self.p_values = np.sign(self.z_scores)*np.absolute(self.p_values)
             return self.p_values, self.select_mask 
+
         return self.z_scores, self.select_mask
 
+       
+class feature_predictor:
+    """Define the predictor to be used."""
 
-
-
-
-# define the predictor to be used        
-class feature_predictor():
     def __init__(self, model, **params):
         self.model = model
         self.params = params
@@ -684,10 +677,3 @@ class feature_predictor():
         if self.model == 'RandomForest' or self.model == 'RF' or self.model == 'randomforest':
             return 0
         return self.lr.intercept_
-
-
-
-
-
-
-
