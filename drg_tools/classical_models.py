@@ -657,17 +657,17 @@ class sk_regression:
 class feature_predictor:
     """Define the predictor to be used."""
 
-    def __init__(self, model, **params):
+    def __init__(self, model: str, **params):
         self.model = model
         self.params = params
         
-        if model == 'RandomForest' or model == 'RF' or model == 'randomforest':
+        if model in ("RandomForest", "RF", "randomforest"):
             self.lr = RandomForestRegressor(**params) #n_estimators=100, *, criterion='squared_error', max_depth=None, min_samples_split=2, min_samples_leaf=1, min_weight_fraction_leaf=0.0, max_features=1.0, max_leaf_nodes=None, min_impurity_decrease=0.0, bootstrap=True, oob_score=False, n_jobs=None, random_state=None, verbose=0, warm_start=False, ccp_alpha=0.0, max_samples=None)
         
-        if model == 'LinearRegression' or model == 'OLS' or model == 'LR':
+        elif model in ("LinearRegression", "OLS", "LR"):
             self.lr = linear_model.LinearRegression(**params) #, fit_intercept=True, copy_X=True, n_jobs=None, positive=False)
         
-        if model == 'ElasticNet' or model == 'elastic' or model == 'EN' or model == 'elasticnet':
+        elif model in ("ElasticNet", "elastic", "EN", "elasticnet"):
             self.lr = linear_model.ElasticNet(**params) #alpha=1.0, *, l1_ratio=0.5, fit_intercept=True, precompute=False, max_iter=1000, copy_X=True, tol=0.0001, warm_start=False, positive=False, random_state=None, selection='cyclic')
         
     def fit(self, x, y):
@@ -681,7 +681,7 @@ class feature_predictor:
     
     def feature_importance(self):
         """Assigns t-test statistic to LR coefficients, same as statsmodels.api.OLS."""
-        if self.model == 'LinearRegression' or self.model == 'OLS' or self.model == 'LR' or self.model == 'ElasticNet' or self.model == 'elastic' or self.model == 'EN' or self.model == 'elasticnet':
+        if self.model in ('LinearRegression', 'OLS', 'LR', 'ElasticNet', 'elastic', 'EN', 'elasticnet'):
             if self.lr.fit_intercept:
                 params = np.append(self.lr.intercept_, self.lr.coef_)
                 newX = np.append(np.ones((len(self.x),1)), self.x, axis=1)
@@ -711,16 +711,16 @@ class feature_predictor:
             rank = np.argsort(np.argsort(-np.abs(ts_b))) + 1
             return rank
         
-        elif self.model == 'RandomForest' or self.model == 'RF' or self.model == 'randomforest':
+        elif self.model in ('RandomForest', 'RF', 'randomforest'):
             ftimp = self.lr.feature_importances_
             return np.argsort(np.argsort(-ftimp)) + 1
     
     def coef_(self):
-        if self.model == 'RandomForest' or self.model == 'RF' or self.model == 'randomforest':
+        if self.model in ('RandomForest', 'RF', 'randomforest'):
             return self.lr.feature_importances_
         return self.lr.coef_
     
     def intercept_(self):
-        if self.model == 'RandomForest' or self.model == 'RF' or self.model == 'randomforest':
+        if self.model in ('RandomForest', 'RF', 'randomforest'):
             return 0
         return self.lr.intercept_
